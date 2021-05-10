@@ -41,6 +41,7 @@ func BeginGet500CN() bool {
 	Close(spiders)
 	return true
 }
+
 func testConnection(url string) string {
 	client := &http.Client{}
 	reqest, err := http.NewRequest("GET", url, nil)
@@ -127,7 +128,8 @@ func getEnPages() []string {
 			return pages
 		}
 		base--
-		time.Sleep(1000)
+		time.Sleep(1 * time.Second)
+		//time.Sleep(1000)
 
 	}
 	return pages
@@ -148,21 +150,24 @@ func BeginGet500EN(pages []string) bool {
 				config.CLASS_ID_EN,
 				false,
 			}
+			time.Sleep(500 * time.Millisecond)
 			spiders[i].AddWork(&page)
 		}
 	}
-	time.Sleep(20 * time.Second)
+
 	Close(spiders)
 	return true
 }
 
 func main() {
 	// 1. 开始爬取 并处理中文页面
+
 	//start := time.Now()
 	//BeginGet500CN()
 	//log.Println("500 中文文档耗时 ", time.Since(start))
-	// 简单同步 time.Sleep(10 * time.Second)
+	////简单同步 time.Sleep(10 * time.Second)
 	//time.Sleep(10 * time.Second)
+
 	//// 2. 开始爬取 并处理英文页面
 	start := time.Now()
 	config.COUNT = 1

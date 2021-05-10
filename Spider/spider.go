@@ -12,7 +12,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"unicode"
 	"unicode/utf8"
 
 	"SearchEngineByGolang/Page"
@@ -113,43 +112,30 @@ func (this *Spider) Parse(html, elmID string, pageType bool) string {
 	dom.Find(elmID).Each(func(i int, selection *goquery.Selection) {
 		//fmt.Println(selection.Text())
 
-		if pageType {
-			parseResult += selection.Text()
-		}
-
 		////str = strings.Replace(selection.Text(), "\n", "", -1)
 		////parseResult += strings.Trim(selection.Text(), "\n")
+		str := selection.Text()
 		if !pageType {
-			check := false
-			str := selection.Text()
-			if len(selection.Text()) >= 5 {
-				str = selection.Text()[len(selection.Text())-5 : len(selection.Text())]
-			}
-			for _, v := range str {
-				// 其实就只用检查一次
-				if unicode.Is(unicode.Han, v) {
-					check = true
-					break
-				}
-				//break;
-			}
-			if !check {
-				parseResult += selection.Text()
-			}
+
+			str = strings.Replace(str, "\n", "", -1)
+			str = strings.Replace(str, ".", " ", -1)
+			str = strings.Replace(str, "?", " ", -1)
+			str = strings.Replace(str, "!", " ", -1)
+			str = strings.Replace(str, ",", " ", -1)
+			str = strings.Replace(str, "  ", " ", -1)
 
 		}
+		parseResult += str
 
 	})
 	if pageType {
 		parseResult = strings.Replace(parseResult, " ", "", -1)
 		parseResult = strings.Replace(parseResult, "\n", "", -1)
 	} else {
-		parseResult = strings.Replace(parseResult, ".", " ", -1)
-		parseResult = strings.Replace(parseResult, "?", " ", -1)
-		parseResult = strings.Replace(parseResult, "!", " ", -1)
-		parseResult = strings.Replace(parseResult, ",", " ", -1)
-		reg := regexp.MustCompile("[\u4e00-\u9fa5]")
-		parseResult = reg.ReplaceAllString(parseResult, " ")
+
+		reg := regexp.MustCompile(`[^a-zA-Z_ \\u4e00-\\u9fa5]`)
+		parseResult = reg.ReplaceAllString(parseResult, "")
+		parseResult = strings.Replace(parseResult, "  ", " ", -1)
 	}
 
 	return parseResult
@@ -165,7 +151,12 @@ func (this *Spider) Save(content string, filePath string) error {
 		fmt.Println("Open file err = ", err)
 		return err
 	}
-	file.Write([]byte(content)) // 将字符串转为数组存放
+
+	_, err = file.WriteString((content)) // 将字符串转为数组存放
+	if err != nil {
+		fmt.Println("Write file err = ", err)
+		return err
+	}
 	defer file.Close()
 	return nil
 }
@@ -203,7 +194,7 @@ func (this *Spider) DoWork(page *Page.Page) {
 		//words = RemoveStopToken(words)
 		//this.Save(strings.Join(words, "\n"), config.SPILIT_WORDS_EN_PATH + "SPILIED_WORDS_" + strconv.Itoa(int(config.COUNT)) + ".txt")
 		// 6.将数据转换成为可以被搜索引擎模式
-		myjieba.SplitWords(content, config.NEWS_NEW_CN+"SearchMode_New_Files_CN_"+strconv.Itoa(int(config.COUNT))+".txt")
+		myjieba.SplitWordsSearchMode(content, config.NEWS_NEW_CN+"SearchMode_New_Files_CN_"+strconv.Itoa(int(config.COUNT))+".txt")
 
 	} else {
 		err = this.Save(content, config.NEWS_OLD_EN+"EN_READING_OLD_FILES_"+strconv.Itoa(int(config.COUNT))+".txt")

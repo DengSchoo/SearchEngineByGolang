@@ -34,7 +34,8 @@ func saveSpilitResult(content, path string) error {
 		fmt.Println("Open file err = ", err)
 		return err
 	}
-	file.Write([]byte(content)) // 将字符串转为数组存放
+	//file.Write([]byte(content)) // 将字符串转为数组存放
+	file.WriteString(content)
 	defer file.Close()
 	return nil
 }
@@ -56,8 +57,8 @@ func SplitWords(content, path string) {
 }
 func SplitWordsSearchMode(content, path string) {
 	var words []string
-	jieba := gojieba.NewJieba()
-	words = jieba.CutAll(content)
+	//jieba := gojieba.NewJieba()
+	words = jieba.CutForSearch(content, true)
 
 	words = RemoveStopToken(words)
 	saveSpilitResult(strings.Join(words, "\n"), path)
